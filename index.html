@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#000000" />
+
+    <title>Mess Coupon</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <span class="back-arrow">←</span>
+        <span class="title">Mess Coupon</span>
+        <span class="meal-history">Meal History</span>
+      </div>
+      <div class="profile-card">
+        <div class="profile-image">
+          <img src="shivam1.png" alt="Profile Picture" />
+        </div>
+        <h2 class="name">Sachin Burnwal</h2>
+        <div class="info">
+          <p>
+            <strong>Father's Name</strong><br />Binod Barnwal
+            (7395425856)
+          </p>
+          <p><strong>Mother's Name</strong><br />Anita Devi (+917395425856)</p>
+          <p>
+            <strong>Program Name</strong><br />P132:B.Tech. (Computer Science
+            and Engineering) (2023)
+          </p>
+          <p>
+            <strong>Hostel</strong><br />Boys Studios 10-A403-Bed C (Std Non-AC
+            4 Seater)
+          </p>
+        </div>
+      </div>
+      <div class="meal-options">
+        <p class="instruction">Tap on the meal name to scan and avail food.</p>
+        <button class="rate-us" onclick="openFeedback()">Rate Us</button>
+        <div class="buttons">
+          <button class="meal-btn">Breakfast →</button>
+          <button class="meal-btn">Lunch →</button>
+          <button class="meal-btn">Dinner →</button>
+          <button class="meal-btn">Tea →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for scanning success -->
+    <div id="successModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Successfully Mess Enrolled!</h2>
+        <!-- <video class="success-gif" loop autoplay muted>
+          <source src="gif.mp4" type="video/mp4" />
+        </video> -->
+      </div>
+    </div>
+
+    <div id="feedbackModal" class="feedback-modal">
+  <div class="feedback-sheet">
+
+    <div class="feedback-header">
+      <span></span>
+      <span class="fh-title">Feedback</span>
+      <span class="fh-close" onclick="closeFeedback()">✕</span>
+    </div>
+
+    <div class="feedback-body">
+      <h2>Mess Feedback</h2>
+      <p class="subtext">Tell us how we did!</p>
+
+      <div class="stars">
+        <span>★</span><span>★</span><span>☆</span><span>☆</span><span>☆</span>
+      </div>
+
+      <p class="select-text">Tap to select meal type</p>
+
+      <div class="meal-type">
+        <button>Breakfast</button>
+        <button class="active">Lunch</button>
+        <button>Tea</button>
+        <button>Dinner</button>
+      </div>
+
+      <div class="section">
+        <h4>Service/Staff</h4>
+        <label><span>Food served late</span><input type="checkbox"></label>
+        <label><span>Staff not polite</span><input type="checkbox"></label>
+      </div>
+
+      <div class="section">
+        <h4>Quantity</h4>
+        <label><span>Refills not available</span><input type="checkbox"></label>
+        <label><span>Less food</span><input type="checkbox"></label>
+      </div>
+
+      <div class="section">
+        <h4>Hygiene</h4>
+        <label><span>Staff not hygienic</span><input type="checkbox"></label>
+        <label><span>Utensils dirty</span><input type="checkbox"></label>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+    <!-- Modal for QR scanner -->
+    <div id="scannerModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div id="scanner" class="scanner"></div>
+      </div>
+    </div>
+
+    <!-- QR Code Library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- Main JavaScript -->
+    <script src="main.js"></script>
+
+    <script>
+    function openFeedback() {
+  document.getElementById("feedbackModal").classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+
+function closeFeedback() {
+  document.getElementById("feedbackModal").classList.remove("show");
+  document.body.style.overflow = "auto";
+}
+    </script>
+
+  </body>
+</html>
+
