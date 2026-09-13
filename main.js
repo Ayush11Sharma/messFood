@@ -5,50 +5,81 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to show modal
   function showModal(modal) {
-    modal.style.display = "block";
+    modal.classList.add("open");
+    modal.style.display = "flex";
   }
 
   // Function to hide modal
   function hideModal(modal) {
+    modal.classList.remove("open");
     modal.style.display = "none";
   }
 
   // Initialize QR code scanner
   function initScanner(mealType) {
+    const selectedMeal = mealType || "Lunch";
     if (scanner) {
       scanner
         .stop()
         .catch((err) => console.log("Error stopping scanner:", err));
     }
 
-    scanner = new Html5Qrcode("scanner");
-    scanner
-      .start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: 250,
-        },
-        (decodedText) => {
-          console.log(`QR Code detected: ${decodedText}`);
-          scanner
-            .stop()
-            .catch((err) => console.log("Error stopping scanner:", err));
-          hideModal(scannerModal);
-          // Redirect to mess-pass.html with the meal type as a query parameter
-          window.location.href = `mess-pass.html?meal=${mealType}`;
-        },
-        (error) => {
-          console.log(`QR Code scan error: ${error}`);
-        }
-      )
-      .catch((err) => console.log("Scanner initialization error:", err));
+    const scannerContainer = document.getElementById("scanner");
+    scannerContainer.innerHTML = "";
+
+    if (window.Html5Qrcode) {
+      scanner = new Html5Qrcode("scanner");
+      scanner
+        .start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          (decodedText) => {
+            console.log(`QR Code detected: ${decodedText}`);
+            scanner
+              .stop()
+              .catch((err) => console.log("Error stopping scanner:", err));
+            hideModal(scannerModal);
+            window.location.href = `mess-pass.html?meal=${encodeURIComponent(selectedMeal)}`;
+          },
+          (error) => {
+            // scanning loop...
+          }
+        )
+        .catch((err) => {
+          console.log("Scanner camera error:", err);
+          if (!scannerContainer.querySelector(".mock-feed")) {
+            scannerContainer.innerHTML = `
+              <div class="mock-feed">
+                <img src="qrrr.png" class="mock-qr" alt="QR Code Feed" />
+              </div>
+            `;
+          }
+        });
+    } else {
+      scannerContainer.innerHTML = `
+        <div class="mock-feed">
+          <img src="qrrr.png" class="mock-qr" alt="QR Code Feed" />
+        </div>
+      `;
+    }
+  }
+
+  // Enable click on scan frame to simulate scanning
+  const scanFrame = document.getElementById("scanFrame");
+  if (scanFrame) {
+    scanFrame.addEventListener("click", () => {
+      hideModal(scannerModal);
+      window.location.href = `mess-pass.html?meal=Lunch`;
+    });
   }
 
   // Start scanner on button click
   document.querySelectorAll(".meal-btn").forEach((button) => {
     button.addEventListener("click", () => {
-      const mealType = button.getAttribute("data-meal"); // Get the meal type from the button
+      const mealType = button.getAttribute("data-meal") || "Lunch";
       showModal(scannerModal);
       initScanner(mealType);
     });
@@ -58,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
   closeModalButtons.forEach((button) => {
     button.addEventListener("click", () => {
       hideModal(scannerModal);
-      if (scanner) {
+      if (scanner && scanner.isScanning) {
         scanner
           .stop()
           .catch((err) => console.log("Error stopping scanner:", err));

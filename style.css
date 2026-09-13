@@ -156,7 +156,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: #000000;
 }
 
 .modal.open {
@@ -167,62 +167,171 @@ body {
   width: 100%;
   height: 100%;
   position: relative;
+  overflow: hidden;
+  background: #000000;
 }
 
-/* ---------- SCANNER ---------- */
+/* ---------- FULL SCREEN CAMERA FEED ---------- */
 .scanner {
   width: 100%;
   height: 100%;
-  position: relative;
-  background: transparent;
+  position: absolute;
+  inset: 0;
+  background: #000000;
 }
 
-/* Close button */
+.scanner video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* Remove default dark semi-transparent overlay from html5-qrcode library */
+#qr-shaded-region,
+#scanner #qr-shaded-region {
+  display: none !important;
+}
+
+/* Close button (top-right only) */
 .close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  font-size: 30px;
-  color: white;
-  z-index: 10000;
+  top: 20px;
+  right: 20px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 38px;
+  text-align: center;
+  z-index: 10001;
   cursor: pointer;
+  user-select: none;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background 0.15s ease;
 }
 
-/* ---------- SCAN FRAME ---------- */
-.scanner::before {
-  content: "";
+.close:active {
+  transform: scale(0.9);
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* ---------- CLEAN OVERLAY & SINGLE SCAN FRAME ---------- */
+.scan-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 65%;
-  height: 38%;
-  transform: translate(-50%, -50%);
-  border: 2px solid rgba(0, 255, 0, 0.8);
-  border-radius: 14px;
-  box-shadow: 0 0 18px rgba(0, 255, 0, 0.4);
-  z-index: 2;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
-.scanner::after {
-  content: "";
+/* Centered square scan frame (60-65% screen width) */
+.scan-frame {
+  position: relative;
+  width: 64vw;
+  max-width: 280px;
+  min-width: 210px;
+  aspect-ratio: 1 / 1;
+  pointer-events: auto;
+}
+
+/* 4 White L-Shaped Corner Brackets */
+.corner {
   position: absolute;
-  top: 31%;
-  left: 50%;
-  width: 65%;
-  height: 2px;
-  background: rgba(0, 255, 0, 0.9);
-  transform: translateX(-50%);
-  animation: scanline 2s linear infinite;
-  z-index: 2;
+  width: 28px;
+  height: 28px;
+  border-color: #ffffff;
+  border-style: solid;
 }
 
-@keyframes scanline {
+.corner.top-left {
+  top: 0;
+  left: 0;
+  border-width: 4px 0 0 4px;
+  border-top-left-radius: 5px;
+}
+
+.corner.top-right {
+  top: 0;
+  right: 0;
+  border-width: 4px 4px 0 0;
+  border-top-right-radius: 5px;
+}
+
+.corner.bottom-left {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 4px 4px;
+  border-bottom-left-radius: 5px;
+}
+
+.corner.bottom-right {
+  bottom: 0;
+  right: 0;
+  border-width: 0 4px 4px 0;
+  border-bottom-right-radius: 5px;
+}
+
+/* Animated Red Scan Line */
+.red-scan-line {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  height: 2.5px;
+  background: #FF3B30;
+  box-shadow: 0 0 8px #FF3B30, 0 0 3px #FF3B30;
+  border-radius: 2px;
+  animation: redScanline 2s ease-in-out infinite;
+}
+
+@keyframes redScanline {
   0% {
-    top: 31%;
+    top: 6px;
+  }
+  50% {
+    top: calc(100% - 8px);
   }
   100% {
-    top: 69%;
+    top: 6px;
   }
+}
+
+/* Minimal scan hint */
+.scan-hint {
+  margin-top: 28px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  opacity: 0.92;
+}
+
+/* Mock fallback camera feed when webcam is not available */
+.mock-feed {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #181818;
+  position: absolute;
+  inset: 0;
+}
+
+.mock-qr {
+  width: 170px;
+  height: 170px;
+  opacity: 0.85;
+  filter: contrast(1.05);
 }
 
 
