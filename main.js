@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   let scanner;
+  let currentSelectedMeal = "Lunch";
   const scannerModal = document.getElementById("scannerModal");
   const closeModalButtons = document.querySelectorAll(".close");
 
@@ -15,9 +16,16 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.style.display = "none";
   }
 
+  // Function to navigate to pass with selected meal
+  function navigateToPass(meal) {
+    const mealToPass = meal || currentSelectedMeal || "Lunch";
+    sessionStorage.setItem("selectedMeal", mealToPass);
+    window.location.href = `mess-pass.html?meal=${encodeURIComponent(mealToPass)}`;
+  }
+
   // Initialize QR code scanner
   function initScanner(mealType) {
-    const selectedMeal = mealType || "Lunch";
+    currentSelectedMeal = mealType || "Lunch";
     if (scanner) {
       scanner
         .stop()
@@ -42,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
               .stop()
               .catch((err) => console.log("Error stopping scanner:", err));
             hideModal(scannerModal);
-            window.location.href = `mess-pass.html?meal=${encodeURIComponent(selectedMeal)}`;
+            navigateToPass(currentSelectedMeal);
           },
           (error) => {
             // scanning loop...
@@ -72,7 +80,16 @@ document.addEventListener("DOMContentLoaded", () => {
   if (scanFrame) {
     scanFrame.addEventListener("click", () => {
       hideModal(scannerModal);
-      window.location.href = `mess-pass.html?meal=Lunch`;
+      navigateToPass(currentSelectedMeal);
+    });
+  }
+
+  // Also handle click on mock scanner feed
+  const scannerContainer = document.getElementById("scanner");
+  if (scannerContainer) {
+    scannerContainer.addEventListener("click", () => {
+      hideModal(scannerModal);
+      navigateToPass(currentSelectedMeal);
     });
   }
 
@@ -80,6 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".meal-btn").forEach((button) => {
     button.addEventListener("click", () => {
       const mealType = button.getAttribute("data-meal") || "Lunch";
+      currentSelectedMeal = mealType;
       showModal(scannerModal);
       initScanner(mealType);
     });

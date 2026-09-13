@@ -19,7 +19,7 @@
     body {
       height: 100%;
       width: 100%;
-      background: #d8d8d8;
+      background: #f1f0f0;
       overflow-x: hidden;
     }
 
@@ -193,7 +193,7 @@
       text-align: center;
       font-size: 16.5px;
       font-weight: 500;
-      margin: 20px 0 12px 0;
+      margin: 23px 0 12px 0;
       color: #111111;
     }
 
@@ -202,7 +202,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin: 27px 40px 8px 12px;
+      margin: 32px 40px 8px 12px;
       padding: 0 4px;
       font-size: 20px;
       font-weight: 600;
@@ -216,7 +216,7 @@
       font-size: 23px;
       font-weight: 900;
       color: #34d35b;
-      margin: 23px 0 4px 0;
+      margin: 33px 0 4px 0;
       letter-spacing: 0.3px;
     }
 
@@ -397,6 +397,13 @@
     const scanBox = document.getElementById('scanBox');
     const closeBtn = document.getElementById('closeBtn');
 
+    // Get selected meal from URL parameters or sessionStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedMeal = urlParams.get('meal') || sessionStorage.getItem('selectedMeal') || 'Lunch';
+    if (mealEl) {
+      mealEl.textContent = selectedMeal;
+    }
+
     // Update time and date
     function updateDateTime() {
       const now = new Date();
@@ -414,11 +421,6 @@
         minute: '2-digit',
         hour12: true
       });
-
-      // Keep meal as set in HTML (Lunch)
-      if (!mealEl.textContent.trim()) {
-        mealEl.textContent = 'Lunch';
-      }
     }
 
     // Counter logic
@@ -437,7 +439,7 @@
     // Close button
     closeBtn.addEventListener('click', () => {
       if (confirm('Close Mess Pass?')) {
-        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-size:20px;">Mess Pass Closed</div>';
+        window.location.href = 'index.html';
       }
     });
 
