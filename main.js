@@ -1,8 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
-  let scanner;
+  let scanner = null;
   let currentSelectedMeal = "Lunch";
+  let isProcessing = false;
+  let scanTimeout = null;
+
   const scannerModal = document.getElementById("scannerModal");
   const closeModalButtons = document.querySelectorAll(".close");
+  const scanHint = document.querySelector(".scan-hint");
+  const scannerContainer = document.getElementById("scanner");
+  const scanFrame = document.getElementById("scanFrame");
 
   // Function to show modal
   function showModal(modal) {
@@ -23,17 +29,94 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = `mess-pass.html?meal=${encodeURIComponent(mealToPass)}`;
   }
 
+  // Reset scanner UI state
+  function resetScannerUI() {
+    if (scannerContainer) {
+      scannerContainer.style.filter = "none";
+    }
+    if (scanFrame) {
+      scanFrame.classList.remove("processing");
+    }
+    if (scanHint) {
+      scanHint.innerHTML = "Point camera at QR code";
+      scanHint.classList.remove("processing");
+    }
+  }
+
+  // Handle successful QR detection with freeze & 2.5s processing delay
+  function handleScanSuccess(decodedText) {
+    if (isProcessing) return; // Prevent duplicate scan triggers
+    isProcessing = true;
+
+    console.log(`QR Code detected: ${decodedText || "simulated"}`);
+
+    // 1. Pause camera feed / freeze last frame if html5qrcode is active
+    if (scanner) {
+      try {
+        if (typeof scanner.pause === "function") {
+          scanner.pause(true); // Freeze last frame
+        }
+      } catch (err) {
+        console.log("Error pausing scanner:", err);
+      }
+    }
+
+    // 2. Dim camera feed / background slightly for frozen frame effect
+    if (scannerContainer) {
+      scannerContainer.style.transition = "filter 0.3s ease";
+      scannerContainer.style.filter = "brightness(0.6)";
+    }
+
+    // 3. Highlight scan frame & update scan hint text with scanning spinner
+    if (scanFrame) {
+      scanFrame.classList.add("processing");
+    }
+    if (scanHint) {
+      scanHint.innerHTML = `<span class="spinner"></span> Scanning in progress...`;
+      scanHint.classList.add("processing");
+    }
+
+    // 4. 2.5 second delay before navigating
+    scanTimeout = setTimeout(() => {
+      if (scanner) {
+        try {
+          scanner
+            .stop()
+            .catch((err) => console.log("Error stopping scanner:", err));
+        } catch (e) {
+          console.log(e);
+        }
+      }
+      hideModal(scannerModal);
+      navigateToPass(currentSelectedMeal);
+      isProcessing = false;
+    }, 2500);
+  }
+
   // Initialize QR code scanner
   function initScanner(mealType) {
     currentSelectedMeal = mealType || "Lunch";
-    if (scanner) {
-      scanner
-        .stop()
-        .catch((err) => console.log("Error stopping scanner:", err));
+    isProcessing = false;
+    if (scanTimeout) {
+      clearTimeout(scanTimeout);
+      scanTimeout = null;
     }
 
-    const scannerContainer = document.getElementById("scanner");
-    scannerContainer.innerHTML = "";
+    resetScannerUI();
+
+    if (scanner) {
+      try {
+        scanner
+          .stop()
+          .catch((err) => console.log("Error stopping scanner:", err));
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    if (scannerContainer) {
+      scannerContainer.innerHTML = "";
+    }
 
     if (window.Html5Qrcode) {
       scanner = new Html5Qrcode("scanner");
@@ -45,28 +128,23 @@ document.addEventListener("DOMContentLoaded", () => {
             qrbox: { width: 250, height: 250 },
           },
           (decodedText) => {
-            console.log(`QR Code detected: ${decodedText}`);
-            scanner
-              .stop()
-              .catch((err) => console.log("Error stopping scanner:", err));
-            hideModal(scannerModal);
-            navigateToPass(currentSelectedMeal);
+            handleScanSuccess(decodedText);
           },
           (error) => {
-            // scanning loop...
+            // normal scan loop iteration
           }
         )
         .catch((err) => {
           console.log("Scanner camera error:", err);
-          if (!scannerContainer.querySelector(".mock-feed")) {
-            scannerContainer.innerHTML = `
-              <div class="mock-feed">
-                <img src="qrrr.png" class="mock-qr" alt="QR Code Feed" />
-              </div>
-            `;
-          }
+          showMockFeed();
         });
     } else {
+      showMockFeed();
+    }
+  }
+
+  function showMockFeed() {
+    if (scannerContainer && !scannerContainer.querySelector(".mock-feed")) {
       scannerContainer.innerHTML = `
         <div class="mock-feed">
           <img src="qrrr.png" class="mock-qr" alt="QR Code Feed" />
@@ -75,25 +153,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Enable click on scan frame to simulate scanning
-  const scanFrame = document.getElementById("scanFrame");
+  // Enable click on scan frame & scanner feed to simulate scanning
   if (scanFrame) {
     scanFrame.addEventListener("click", () => {
-      hideModal(scannerModal);
-      navigateToPass(currentSelectedMeal);
+      handleScanSuccess("simulated_qr_code");
     });
   }
 
-  // Also handle click on mock scanner feed
-  const scannerContainer = document.getElementById("scanner");
   if (scannerContainer) {
     scannerContainer.addEventListener("click", () => {
-      hideModal(scannerModal);
-      navigateToPass(currentSelectedMeal);
+      handleScanSuccess("simulated_qr_code");
     });
   }
 
-  // Start scanner on button click
+  // Start scanner on meal button click
   document.querySelectorAll(".meal-btn").forEach((button) => {
     button.addEventListener("click", () => {
       const mealType = button.getAttribute("data-meal") || "Lunch";
@@ -103,15 +176,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Close modals
+  // Close scanner modal button click
   closeModalButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      hideModal(scannerModal);
-      if (scanner && scanner.isScanning) {
-        scanner
-          .stop()
-          .catch((err) => console.log("Error stopping scanner:", err));
+      if (scanTimeout) {
+        clearTimeout(scanTimeout);
+        scanTimeout = null;
       }
+      isProcessing = false;
+      hideModal(scannerModal);
+      if (scanner) {
+        try {
+          scanner
+            .stop()
+            .catch((err) => console.log("Error stopping scanner:", err));
+        } catch (e) {
+          console.log(e);
+        }
+      }
+      resetScannerUI();
     });
   });
 });
+

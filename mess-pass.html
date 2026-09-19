@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Mess Pass</title>
+  <link rel="stylesheet" href="style.css" />
 
   <style>
     * {
@@ -366,7 +367,7 @@
         <div class="approved-text">Meal Approved</div>
 
         <div class="rate-us-container">
-          <div class="rate-us-btn">
+          <div class="rate-us-btn" onclick="openFeedback()">
             <span class="star-icon">★</span>
             <span class="rate-us-text">RATE US</span>
           </div>
@@ -387,6 +388,81 @@
     <input type="color" id="colorPicker" value="#2E7D32">
   </div>
 
+  <!-- Feedback Bottom Sheet Modal -->
+  <div id="feedbackModal" class="feedback-backdrop">
+    <div class="feedback-sheet">
+      <div class="feedback-header">
+        <div class="drag-handle"></div>
+        <span class="fh-title">Feedback</span>
+        <span class="fh-close" onclick="closeFeedback()">✕</span>
+      </div>
+
+      <div class="feedback-body">
+        <h2 class="fb-title">Mess Feedback</h2>
+        <p class="fb-subtext">Tell us how we did!</p>
+
+        <div class="star-rating" id="starRating">
+          <span class="star empty" data-value="1">★</span>
+          <span class="star empty" data-value="2">★</span>
+          <span class="star empty" data-value="3">★</span>
+          <span class="star empty" data-value="4">★</span>
+          <span class="star empty" data-value="5">★</span>
+        </div>
+
+        <p class="select-text">Tap to select meal type</p>
+
+        <div class="meal-type-pills" id="mealTypePills">
+          <button class="meal-pill" data-meal="Breakfast">Breakfast</button>
+          <button class="meal-pill active" data-meal="Lunch">Lunch</button>
+          <button class="meal-pill" data-meal="Tea">Tea</button>
+          <button class="meal-pill" data-meal="Dinner">Dinner</button>
+        </div>
+
+        <div class="feedback-list-heading">Feedback</div>
+
+        <div class="feedback-flat-list">
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>Overall excellent service</span>
+            <div class="custom-checkbox"></div>
+          </div>
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>On-time serving</span>
+            <div class="custom-checkbox"></div>
+          </div>
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>Sufficient quantity</span>
+            <div class="custom-checkbox"></div>
+          </div>
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>Staff was polite & helpful</span>
+            <div class="custom-checkbox"></div>
+          </div>
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>Neat & hygienic</span>
+            <div class="custom-checkbox"></div>
+          </div>
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>Food was tasty</span>
+            <div class="custom-checkbox"></div>
+          </div>
+        </div>
+
+        <button class="submit-btn" onclick="submitFeedback()">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post-Submit Confirmation Dialog -->
+  <div id="confirmationModal" class="confirmation-backdrop">
+    <div class="confirmation-card">
+      <div class="confirmation-title">Message</div>
+      <div class="confirmation-body">
+        Thank you for your feedback! Your input helps improve the mess service.
+      </div>
+      <button class="confirmation-ok-btn" onclick="closeConfirmation()">OK</button>
+    </div>
+  </div>
+
   <script>
     // Elements
     const counterEl = document.getElementById('counter');
@@ -402,6 +478,13 @@
     const selectedMeal = urlParams.get('meal') || sessionStorage.getItem('selectedMeal') || 'Lunch';
     if (mealEl) {
       mealEl.textContent = selectedMeal;
+    }
+
+    // Set meal pill initial state based on selected meal
+    const initialMealPill = document.querySelector(`#mealTypePills .meal-pill[data-meal="${selectedMeal}"]`);
+    if (initialMealPill) {
+      document.querySelectorAll('#mealTypePills .meal-pill').forEach(p => p.classList.remove('active'));
+      initialMealPill.classList.add('active');
     }
 
     // Update time and date
@@ -460,10 +543,88 @@
     const avatarImg = document.querySelector('.avatar-sq');
     if (avatarImg) {
       avatarImg.onerror = function () {
-        this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDgiIGN5PSI0OCIgcj0iNDgiIGZpbGw9IiNFM0UzRTMiLz4KPHBhdGggZD0iTTQ4IDM0QzQxLjM3MjYgMzQgMzYgMzkuMzcyNiAzNicA0NkMzNiA1Mi42Mjc0IDQxLjM3MjYgNTggNDggNThDNTQuNjI3NCAzNCA2MCA1Mi42Mjc0IDYwIDQ2QzYwIDM5LjM3MjYgNTQuNjI3NCAzNCA0OCAzNFpNNDggNjJDMzguMDU5IDYyIDMwIDcwLjA1OSAzMCA4MEg2NkM2NeA3MC4wNTkgNTtuOTQxIDYyIDQ4IDYyWiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+';
+        this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDgiIGN5PSI0OCIgcj0iNDgiIGZpbGw9IiNFM0UzRTMiLz4KPHBhdGggZD0iTTQ4IDM0QzQxLjM3MjYgMzQgMzYgMzkuMzcyNiAzNicA0NkMzNiA1Mi42Mjc0IDQxLjM3MjYgNTggNDggNThDNTQuNjI3NCAzNCA2MCA1Mi42Mjc0IDQxLjM3MjYgNTggNDggNThDNTQuNjI3NCAzNCA2MCA1Mi42Mjc0IDYwIDQ2QzYwIDM5LjM3MjYgNTQuNjI3NCAzNCA0OCAzNFpNNDggNjJDMzguMDU5ID6yIDMwIDcwLjA1OSAzMCA4MEg2NkM2NeA3MC4wNTkgNTtuOTQxIDYyIDQ4IDYyWiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+';
         this.alt = 'Profile Image';
       };
     }
+
+    // ---------- FEEDBACK MODAL INTERACTION LOGIC ----------
+    let currentRating = 0;
+
+    function setRating(rating) {
+      currentRating = rating;
+      const stars = document.querySelectorAll('#starRating .star');
+      stars.forEach((star, index) => {
+        if (index < rating) {
+          star.classList.remove('empty');
+        } else {
+          star.classList.add('empty');
+        }
+      });
+    }
+
+    function initFeedbackEvents() {
+      setRating(0);
+      const stars = document.querySelectorAll('#starRating .star');
+      stars.forEach((star) => {
+        star.addEventListener('click', () => {
+          const val = parseInt(star.getAttribute('data-value'), 10);
+          setRating(val);
+        });
+      });
+
+      const pills = document.querySelectorAll('#mealTypePills .meal-pill');
+      pills.forEach((pill) => {
+        pill.addEventListener('click', () => {
+          pills.forEach((p) => p.classList.remove('active'));
+          pill.classList.add('active');
+        });
+      });
+    }
+
+    function toggleCheckbox(element) {
+      const cb = element.querySelector('.custom-checkbox');
+      if (cb) {
+        cb.classList.toggle('checked');
+      }
+    }
+
+    function openFeedback() {
+      const modal = document.getElementById('feedbackModal');
+      if (modal) {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeFeedback() {
+      const modal = document.getElementById('feedbackModal');
+      if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = 'auto';
+      }
+    }
+
+    function submitFeedback() {
+      closeFeedback();
+      setTimeout(() => {
+        const confirmModal = document.getElementById('confirmationModal');
+        if (confirmModal) {
+          confirmModal.classList.add('show');
+          document.body.style.overflow = 'hidden';
+        }
+      }, 200);
+    }
+
+    function closeConfirmation() {
+      const confirmModal = document.getElementById('confirmationModal');
+      if (confirmModal) {
+        confirmModal.classList.remove('show');
+        document.body.style.overflow = 'auto';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initFeedbackEvents);
   </script>
 
 </body>

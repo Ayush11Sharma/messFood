@@ -62,55 +62,80 @@
     </div>
   </div>
 
-  <div id="feedbackModal" class="feedback-modal">
+  <!-- Feedback Bottom Sheet Modal -->
+  <div id="feedbackModal" class="feedback-backdrop">
     <div class="feedback-sheet">
-
       <div class="feedback-header">
-        <span></span>
+        <div class="drag-handle"></div>
         <span class="fh-title">Feedback</span>
         <span class="fh-close" onclick="closeFeedback()">✕</span>
       </div>
 
       <div class="feedback-body">
-        <h2>Mess Feedback</h2>
-        <p class="subtext">Tell us how we did!</p>
+        <h2 class="fb-title">Mess Feedback</h2>
+        <p class="fb-subtext">Tell us how we did!</p>
 
-        <div class="stars">
-          <span>★</span><span>★</span><span>☆</span><span>☆</span><span>☆</span>
+        <div class="star-rating" id="starRating">
+          <span class="star empty" data-value="1">★</span>
+          <span class="star empty" data-value="2">★</span>
+          <span class="star empty" data-value="3">★</span>
+          <span class="star empty" data-value="4">★</span>
+          <span class="star empty" data-value="5">★</span>
         </div>
 
         <p class="select-text">Tap to select meal type</p>
 
-        <div class="meal-type">
-          <button>Breakfast</button>
-          <button class="active">Lunch</button>
-          <button>Tea</button>
-          <button>Dinner</button>
+        <div class="meal-type-pills" id="mealTypePills">
+          <button class="meal-pill" data-meal="Breakfast">Breakfast</button>
+          <button class="meal-pill active" data-meal="Lunch">Lunch</button>
+          <button class="meal-pill" data-meal="Tea">Tea</button>
+          <button class="meal-pill" data-meal="Dinner">Dinner</button>
         </div>
 
-        <div class="section">
-          <h4>Service/Staff</h4>
-          <label><span>Food served late</span><input type="checkbox"></label>
-          <label><span>Staff not polite</span><input type="checkbox"></label>
+        <div class="feedback-list-heading">Feedback</div>
+
+        <div class="feedback-flat-list">
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>Overall excellent service</span>
+            <div class="custom-checkbox"></div>
+          </div>
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>On-time serving</span>
+            <div class="custom-checkbox"></div>
+          </div>
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>Sufficient quantity</span>
+            <div class="custom-checkbox"></div>
+          </div>
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>Staff was polite & helpful</span>
+            <div class="custom-checkbox"></div>
+          </div>
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>Neat & hygienic</span>
+            <div class="custom-checkbox"></div>
+          </div>
+          <div class="feedback-item" onclick="toggleCheckbox(this)">
+            <span>Food was tasty</span>
+            <div class="custom-checkbox"></div>
+          </div>
         </div>
 
-        <div class="section">
-          <h4>Quantity</h4>
-          <label><span>Refills not available</span><input type="checkbox"></label>
-          <label><span>Less food</span><input type="checkbox"></label>
-        </div>
-
-        <div class="section">
-          <h4>Hygiene</h4>
-          <label><span>Staff not hygienic</span><input type="checkbox"></label>
-          <label><span>Utensils dirty</span><input type="checkbox"></label>
-        </div>
-
+        <button class="submit-btn" onclick="submitFeedback()">Submit</button>
       </div>
     </div>
   </div>
 
-
+  <!-- Post-Submit Confirmation Dialog -->
+  <div id="confirmationModal" class="confirmation-backdrop">
+    <div class="confirmation-card">
+      <div class="confirmation-title">Message</div>
+      <div class="confirmation-body">
+        Thank you for your feedback! Your input helps improve the mess service.
+      </div>
+      <button class="confirmation-ok-btn" onclick="closeConfirmation()">OK</button>
+    </div>
+  </div>
 
   <!-- Modal for QR scanner -->
   <div id="scannerModal" class="modal">
@@ -138,15 +163,82 @@
   <script src="main.js"></script>
 
   <script>
+    let currentRating = 0;
+
+    function setRating(rating) {
+      currentRating = rating;
+      const stars = document.querySelectorAll('#starRating .star');
+      stars.forEach((star, index) => {
+        if (index < rating) {
+          star.classList.remove('empty');
+        } else {
+          star.classList.add('empty');
+        }
+      });
+    }
+
+    function initFeedbackEvents() {
+      setRating(0);
+      const stars = document.querySelectorAll('#starRating .star');
+      stars.forEach((star) => {
+        star.addEventListener('click', () => {
+          const val = parseInt(star.getAttribute('data-value'), 10);
+          setRating(val);
+        });
+      });
+
+      const pills = document.querySelectorAll('#mealTypePills .meal-pill');
+      pills.forEach((pill) => {
+        pill.addEventListener('click', () => {
+          pills.forEach((p) => p.classList.remove('active'));
+          pill.classList.add('active');
+        });
+      });
+    }
+
+    function toggleCheckbox(element) {
+      const cb = element.querySelector('.custom-checkbox');
+      if (cb) {
+        cb.classList.toggle('checked');
+      }
+    }
+
     function openFeedback() {
-      document.getElementById("feedbackModal").classList.add("show");
-      document.body.style.overflow = "hidden";
+      const modal = document.getElementById("feedbackModal");
+      if (modal) {
+        modal.classList.add("show");
+        document.body.style.overflow = "hidden";
+      }
     }
 
     function closeFeedback() {
-      document.getElementById("feedbackModal").classList.remove("show");
-      document.body.style.overflow = "auto";
+      const modal = document.getElementById("feedbackModal");
+      if (modal) {
+        modal.classList.remove("show");
+        document.body.style.overflow = "auto";
+      }
     }
+
+    function submitFeedback() {
+      closeFeedback();
+      setTimeout(() => {
+        const confirmModal = document.getElementById("confirmationModal");
+        if (confirmModal) {
+          confirmModal.classList.add("show");
+          document.body.style.overflow = "hidden";
+        }
+      }, 200);
+    }
+
+    function closeConfirmation() {
+      const confirmModal = document.getElementById("confirmationModal");
+      if (confirmModal) {
+        confirmModal.classList.remove("show");
+        document.body.style.overflow = "auto";
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initFeedbackEvents);
   </script>
 
 </body>
