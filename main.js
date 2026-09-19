@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const redScanLine = document.querySelector(".red-scan-line");
     if (scannerContainer) {
       scannerContainer.style.filter = "none";
+      scannerContainer.classList.remove("frozen");
     }
     if (scanFrame) {
       scanFrame.classList.remove("processing");
@@ -47,20 +48,53 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Handle successful QR detection (remove red line after scan, keep scanner unchanged)
+  // Handle successful QR detection (freeze camera feed, show processing state for 2.5s on scanner screen, then navigate)
   function handleScanSuccess(decodedText) {
     if (isProcessing) return; // Prevent duplicate scan triggers
     isProcessing = true;
 
     console.log(`QR Code detected: ${decodedText || "simulated"}`);
 
-    // Hide red scan line after scan
+    // 1. Immediately pause/freeze video feed and scanner (keep last frame visible)
+    const videoEl = scannerContainer ? scannerContainer.querySelector("video") : null;
+    if (videoEl) {
+      try {
+        videoEl.pause();
+      } catch (e) {
+        console.log("Error pausing video element:", e);
+      }
+    }
+
+    if (scanner && typeof scanner.pause === "function") {
+      try {
+        scanner.pause(true);
+      } catch (e) {
+        console.log("Error pausing html5-qrcode scanner:", e);
+      }
+    }
+
+    // 2. Dim camera feed on freeze
+    if (scannerContainer) {
+      scannerContainer.style.filter = "brightness(0.65)";
+      scannerContainer.classList.add("frozen");
+    }
+
+    // 3. Hide red scan line after detection
     const redScanLine = document.querySelector(".red-scan-line");
     if (redScanLine) {
       redScanLine.style.display = "none";
     }
 
-    // Delay before navigating
+    // 4. Update scan hint and scan frame to processing state
+    if (scanFrame) {
+      scanFrame.classList.add("processing");
+    }
+    if (scanHint) {
+      scanHint.innerHTML = '<span class="spinner"></span> Processing...';
+      scanHint.classList.add("processing");
+    }
+
+    // 5. 2.5 second delay on the scanner screen before navigation
     scanTimeout = setTimeout(() => {
       if (scanner) {
         try {

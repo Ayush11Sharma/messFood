@@ -182,6 +182,11 @@ body {
   position: absolute;
   inset: 0;
   background: #000000;
+  transition: filter 0.3s ease;
+}
+
+.scanner.frozen {
+  filter: brightness(0.65);
 }
 
 .scanner video {
@@ -327,6 +332,17 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+.scan-hint.processing {
+  color: #ffd27d;
+  font-weight: 600;
+  animation: pulseScanHint 1.2s ease-in-out infinite alternate;
+}
+
+.scan-frame.processing .corner {
+  border-color: #ffd27d;
+  box-shadow: 0 0 12px rgba(255, 210, 125, 0.6);
 }
 
 
