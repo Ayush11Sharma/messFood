@@ -85,14 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
       redScanLine.style.display = "none";
     }
 
-    // 4. Update scan hint and scan frame to processing state
-    if (scanFrame) {
-      scanFrame.classList.add("processing");
-    }
-    if (scanHint) {
-      scanHint.innerHTML = '<span class="spinner"></span> Processing...';
-      scanHint.classList.add("processing");
-    }
 
     // 5. 2.5 second delay on the scanner screen before navigation
     scanTimeout = setTimeout(() => {
