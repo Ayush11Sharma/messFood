@@ -248,11 +248,6 @@ body {
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Highlight corners during scanning processing */
-.scan-frame.processing .corner {
-  border-color: #ffd27d;
-  box-shadow: 0 0 10px rgba(255, 210, 125, 0.7);
-}
 
 /* 4 White L-Shaped Corner Brackets */
 .corner {
@@ -334,11 +329,6 @@ body {
   gap: 8px;
 }
 
-.scan-hint.processing {
-  color: #ffd27d;
-  font-weight: 600;
-  animation: pulseScanHint 0.8s ease-in-out infinite alternate;
-}
 
 /* Processing Spinner */
 .spinner {

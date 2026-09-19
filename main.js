@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Reset scanner UI state
   function resetScannerUI() {
+    const redScanLine = document.querySelector(".red-scan-line");
     if (scannerContainer) {
       scannerContainer.style.filter = "none";
     }
@@ -41,42 +42,25 @@ document.addEventListener("DOMContentLoaded", () => {
       scanHint.innerHTML = "Point camera at QR code";
       scanHint.classList.remove("processing");
     }
+    if (redScanLine) {
+      redScanLine.style.display = "block";
+    }
   }
 
-  // Handle successful QR detection with freeze & 2.5s processing delay
+  // Handle successful QR detection (remove red line after scan, keep scanner unchanged)
   function handleScanSuccess(decodedText) {
     if (isProcessing) return; // Prevent duplicate scan triggers
     isProcessing = true;
 
     console.log(`QR Code detected: ${decodedText || "simulated"}`);
 
-    // 1. Pause camera feed / freeze last frame if html5qrcode is active
-    if (scanner) {
-      try {
-        if (typeof scanner.pause === "function") {
-          scanner.pause(true); // Freeze last frame
-        }
-      } catch (err) {
-        console.log("Error pausing scanner:", err);
-      }
+    // Hide red scan line after scan
+    const redScanLine = document.querySelector(".red-scan-line");
+    if (redScanLine) {
+      redScanLine.style.display = "none";
     }
 
-    // 2. Dim camera feed / background slightly for frozen frame effect
-    if (scannerContainer) {
-      scannerContainer.style.transition = "filter 0.3s ease";
-      scannerContainer.style.filter = "brightness(0.6)";
-    }
-
-    // 3. Highlight scan frame & update scan hint text with scanning spinner
-    if (scanFrame) {
-      scanFrame.classList.add("processing");
-    }
-    if (scanHint) {
-      scanHint.innerHTML = `<span class="spinner"></span> Scanning in progress...`;
-      scanHint.classList.add("processing");
-    }
-
-    // 4. 2.5 second delay before navigating
+    // Delay before navigating
     scanTimeout = setTimeout(() => {
       if (scanner) {
         try {
