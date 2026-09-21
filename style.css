@@ -144,7 +144,7 @@ body {
   border-radius: 8px;
   background: linear-gradient(135deg, #ff7e6a, #ffd27d);
   font-size: 15px;
-  font-weight: 150;
+  font-weight: 210;
   color: #000;
   cursor: pointer;
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
@@ -236,13 +236,13 @@ body {
   inset: 0;
   z-index: 10000;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   pointer-events: none;
+  overflow: hidden;
 }
 
-/* Centered square scan frame (60-65% screen width) */
+/* Centered plain square scan box */
 .scan-frame {
   position: relative;
   width: 64vw;
@@ -250,131 +250,82 @@ body {
   min-width: 210px;
   aspect-ratio: 1 / 1;
   pointer-events: auto;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
 }
 
-
-/* 4 White L-Shaped Corner Brackets */
-.corner {
-  position: absolute;
-  width: 28px;
-  height: 28px;
-  border-color: #ffffff;
-  border-style: solid;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.corner.top-left {
-  top: 0;
-  left: 0;
-  border-width: 4px 0 0 4px;
-  border-top-left-radius: 5px;
-}
-
-.corner.top-right {
-  top: 0;
-  right: 0;
-  border-width: 4px 4px 0 0;
-  border-top-right-radius: 5px;
-}
-
-.corner.bottom-left {
-  bottom: 0;
-  left: 0;
-  border-width: 0 0 4px 4px;
-  border-bottom-left-radius: 5px;
-}
-
-.corner.bottom-right {
-  bottom: 0;
-  right: 0;
-  border-width: 0 4px 4px 0;
-  border-bottom-right-radius: 5px;
-}
-
-/* Animated Red Scan Line */
+/* Centered Blinking Red Scan Line */
 .red-scan-line {
   position: absolute;
-  left: 3px;
-  right: 3px;
-  height: 2.5px;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  height: 2px;
   background: #FF3B30;
-  box-shadow: 0 0 8px #FF3B30, 0 0 3px #FF3B30;
-  border-radius: 2px;
-  animation: redScanline 2s ease-in-out infinite;
+  box-shadow: 0 0 6px #FF3B30, 0 0 2px #FF3B30;
+  border-radius: 1px;
+  animation: redBlink 1.2s ease-in-out infinite;
+  z-index: 2;
 }
 
-@keyframes redScanline {
+@keyframes redBlink {
   0% {
-    top: 6px;
+    opacity: 1;
   }
 
   50% {
-    top: calc(100% - 8px);
+    opacity: 0;
   }
 
   100% {
-    top: 6px;
-  }
-}
-
-/* Minimal scan hint */
-.scan-hint {
-  margin-top: 28px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
-  opacity: 0.92;
-  transition: color 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.scan-hint.processing {
-  color: #ffd27d;
-  font-weight: 600;
-  animation: pulseScanHint 1.2s ease-in-out infinite alternate;
-}
-
-.scan-frame.processing .corner {
-  border-color: #ffd27d;
-  box-shadow: 0 0 12px rgba(255, 210, 125, 0.6);
-}
-
-
-/* Processing Spinner */
-.spinner {
-  width: 15px;
-  height: 15px;
-  border: 2px solid rgba(255, 210, 125, 0.3);
-  border-top-color: #ffd27d;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes pulseScanHint {
-  from {
-    opacity: 0.6;
-    transform: scale(0.98);
-  }
-  to {
     opacity: 1;
-    transform: scale(1.02);
+  }
+}
+
+/* Yellow Sparkle Dots Effect */
+.dots-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.yellow-dot {
+  position: absolute;
+  border-radius: 50%;
+  background-color: #FFD700;
+  box-shadow: 0 0 4px #FFD700, 0 0 1.5px #FFC107;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.5);
+}
+
+.yellow-dot.blink {
+  animation: yellowDotSparkle 1.2s ease-in-out forwards;
+}
+
+@keyframes yellowDotSparkle {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+
+  25% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  65% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
   }
 }
 

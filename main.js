@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const scannerModal = document.getElementById("scannerModal");
   const closeModalButtons = document.querySelectorAll(".close");
-  const scanHint = document.querySelector(".scan-hint");
   const scannerContainer = document.getElementById("scanner");
   const scanFrame = document.getElementById("scanFrame");
 
@@ -29,19 +28,80 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = `mess-pass.html?meal=${encodeURIComponent(mealToPass)}`;
   }
 
+  let dotInterval = null;
+
+  function startYellowDotsEffect() {
+    stopYellowDotsEffect();
+    const scanFrame = document.getElementById("scanFrame");
+    if (!scanFrame) return;
+
+    let dotsContainer = scanFrame.querySelector(".dots-container");
+    if (!dotsContainer) {
+      dotsContainer = document.createElement("div");
+      dotsContainer.className = "dots-container";
+      scanFrame.appendChild(dotsContainer);
+    }
+    dotsContainer.innerHTML = "";
+
+    const totalDots = 18;
+    const dots = [];
+
+    for (let i = 0; i < totalDots; i++) {
+      const dot = document.createElement("div");
+      dot.className = "yellow-dot";
+      dotsContainer.appendChild(dot);
+      dots.push(dot);
+    }
+
+    function animateDot(dot) {
+      const x = Math.floor(Math.random() * 80) + 10;
+      const y = Math.floor(Math.random() * 80) + 10;
+      const size = (Math.random() * 1.0 + 1.5).toFixed(1); // 1.5px to 2.5px
+
+      dot.style.left = `${x}%`;
+      dot.style.top = `${y}%`;
+      dot.style.width = `${size}px`;
+      dot.style.height = `${size}px`;
+
+      dot.classList.remove("blink");
+      void dot.offsetWidth;
+      dot.classList.add("blink");
+    }
+
+    let activeIndex = 0;
+    // Trigger a dot every 450ms (~2-3 dots active at any given moment)
+    dotInterval = setInterval(() => {
+      if (!scannerModal.classList.contains("open")) {
+        stopYellowDotsEffect();
+        return;
+      }
+      const dot = dots[activeIndex];
+      animateDot(dot);
+      activeIndex = (activeIndex + 1) % totalDots;
+    }, 450);
+  }
+
+  function stopYellowDotsEffect() {
+    if (dotInterval) {
+      clearInterval(dotInterval);
+      dotInterval = null;
+    }
+    const dotsContainer = document.querySelector(".dots-container");
+    if (dotsContainer) {
+      dotsContainer.remove();
+    }
+  }
+
   // Reset scanner UI state
   function resetScannerUI() {
     const redScanLine = document.querySelector(".red-scan-line");
+    stopYellowDotsEffect();
     if (scannerContainer) {
       scannerContainer.style.filter = "none";
       scannerContainer.classList.remove("frozen");
     }
     if (scanFrame) {
       scanFrame.classList.remove("processing");
-    }
-    if (scanHint) {
-      scanHint.innerHTML = "Point camera at QR code";
-      scanHint.classList.remove("processing");
     }
     if (redScanLine) {
       redScanLine.style.display = "block";
@@ -79,11 +139,12 @@ document.addEventListener("DOMContentLoaded", () => {
       scannerContainer.classList.add("frozen");
     }
 
-    // 3. Hide red scan line after detection
+    // 3. Hide red scan line & stop yellow dots after detection
     const redScanLine = document.querySelector(".red-scan-line");
     if (redScanLine) {
       redScanLine.style.display = "none";
     }
+    stopYellowDotsEffect();
 
 
     // 5. 2.5 second delay on the scanner screen before navigation
@@ -113,6 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     resetScannerUI();
+    startYellowDotsEffect();
 
     if (scanner) {
       try {
